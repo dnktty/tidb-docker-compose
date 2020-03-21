@@ -19,7 +19,9 @@ services:
       - --data-dir=/data/pd0
       - --config=/pd.toml
       - --log-file=/logs/pd0.log
-    restart: on-failure
+    networks:
+      - tidb
+    
   pd1:
     image: pingcap/pd:latest
     ports:
@@ -38,7 +40,8 @@ services:
       - --data-dir=/data/pd1
       - --config=/pd.toml
       - --log-file=/logs/pd1.log
-    restart: on-failure
+    networks:
+      - tidb
   pd2:
     image: pingcap/pd:latest
     ports:
@@ -57,7 +60,8 @@ services:
       - --data-dir=/data/pd2
       - --config=/pd.toml
       - --log-file=/logs/pd2.log
-    restart: on-failure
+    networks:
+      - tidb
   tikv0:
     image: pingcap/tikv:latest
     volumes:
@@ -75,7 +79,8 @@ services:
       - "pd0"
       - "pd1"
       - "pd2"
-    restart: on-failure
+    networks:
+      - tidb
   tikv1:
     image: pingcap/tikv:latest
     volumes:
@@ -93,7 +98,8 @@ services:
       - "pd0"
       - "pd1"
       - "pd2"
-    restart: on-failure
+    networks:
+      - tidb
   tikv2:
     image: pingcap/tikv:latest
     volumes:
@@ -111,7 +117,8 @@ services:
       - "pd0"
       - "pd1"
       - "pd2"
-    restart: on-failure
+    networks:
+      - tidb
 
   tidb:
     image: pingcap/tidb:latest
@@ -131,7 +138,8 @@ services:
       - "tikv0"
       - "tikv1"
       - "tikv2"
-    restart: on-failure
+    networks:
+      - tidb
   tispark-master:
     image: pingcap/tispark:latest
     command:
@@ -148,7 +156,8 @@ services:
       - "tikv0"
       - "tikv1"
       - "tikv2"
-    restart: on-failure
+    networks:
+      - tidb
   tispark-slave0:
     image: pingcap/tispark:latest
     command:
@@ -162,7 +171,8 @@ services:
       - "38081:38081"
     depends_on:
       - tispark-master
-    restart: on-failure
+    networks:
+      - tidb
 
   tidb-vision:
     image: pingcap/tidb-vision:latest
@@ -170,14 +180,16 @@ services:
       PD_ENDPOINT: pd0:2379
     ports:
       - "8010:8010"
-    restart: on-failure
+    networks:
+      - tidb
 
   # monitors
   pushgateway:
     image: prom/pushgateway:v0.3.1
     command:
       - --log.level=error
-    restart: on-failure
+    networks:
+      - tidb
   prometheus:
     user: root
     image: prom/prometheus:v2.2.1
@@ -193,7 +205,8 @@ services:
       - ./config/tikv.rules.yml:/etc/prometheus/tikv.rules.yml:ro
       - ./config/tidb.rules.yml:/etc/prometheus/tidb.rules.yml:ro
       - ./data:/data
-    restart: on-failure
+    networks:
+      - tidb
   grafana:
     image: grafana/grafana:6.0.1
     user: "0"
@@ -207,4 +220,5 @@ services:
       - ./data/grafana:/var/lib/grafana
     ports:
       - "3000:3000"
-    restart: on-failure
+    networks:
+      - tidb
