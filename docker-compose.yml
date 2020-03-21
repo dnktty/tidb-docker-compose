@@ -19,9 +19,7 @@ services:
       - --data-dir=/data/pd0
       - --config=/pd.toml
       - --log-file=/logs/pd0.log
-    networks:
-      - tidb
-    
+    restart: on-failure
   pd1:
     image: pingcap/pd:latest
     ports:
@@ -40,8 +38,7 @@ services:
       - --data-dir=/data/pd1
       - --config=/pd.toml
       - --log-file=/logs/pd1.log
-    networks:
-      - tidb
+    restart: on-failure
   pd2:
     image: pingcap/pd:latest
     ports:
@@ -60,8 +57,7 @@ services:
       - --data-dir=/data/pd2
       - --config=/pd.toml
       - --log-file=/logs/pd2.log
-    networks:
-      - tidb
+    restart: on-failure
   tikv0:
     image: pingcap/tikv:latest
     volumes:
@@ -79,8 +75,7 @@ services:
       - "pd0"
       - "pd1"
       - "pd2"
-    networks:
-      - tidb
+    restart: on-failure
   tikv1:
     image: pingcap/tikv:latest
     volumes:
@@ -98,8 +93,7 @@ services:
       - "pd0"
       - "pd1"
       - "pd2"
-    networks:
-      - tidb
+    restart: on-failure
   tikv2:
     image: pingcap/tikv:latest
     volumes:
@@ -117,8 +111,7 @@ services:
       - "pd0"
       - "pd1"
       - "pd2"
-    networks:
-      - tidb
+    restart: on-failure
 
   tidb:
     image: pingcap/tidb:latest
@@ -138,8 +131,7 @@ services:
       - "tikv0"
       - "tikv1"
       - "tikv2"
-    networks:
-      - tidb
+    restart: on-failure
   tispark-master:
     image: pingcap/tispark:latest
     command:
@@ -148,16 +140,15 @@ services:
       - ./config/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf:ro
     environment:
       SPARK_MASTER_PORT: 7077
-      SPARK_MASTER_WEBUI_PORT: 9080
+      SPARK_MASTER_WEBUI_PORT: 8080
     ports:
       - "7077:7077"
-      - "9080:9080"
+      - "8080:8080"
     depends_on:
       - "tikv0"
       - "tikv1"
       - "tikv2"
-    networks:
-      - tidb
+    restart: on-failure
   tispark-slave0:
     image: pingcap/tispark:latest
     command:
@@ -171,8 +162,7 @@ services:
       - "38081:38081"
     depends_on:
       - tispark-master
-    networks:
-      - tidb
+    restart: on-failure
 
   tidb-vision:
     image: pingcap/tidb-vision:latest
@@ -180,16 +170,14 @@ services:
       PD_ENDPOINT: pd0:2379
     ports:
       - "8010:8010"
-    networks:
-      - tidb
+    restart: on-failure
 
   # monitors
   pushgateway:
     image: prom/pushgateway:v0.3.1
     command:
       - --log.level=error
-    networks:
-      - tidb
+    restart: on-failure
   prometheus:
     user: root
     image: prom/prometheus:v2.2.1
@@ -205,8 +193,7 @@ services:
       - ./config/tikv.rules.yml:/etc/prometheus/tikv.rules.yml:ro
       - ./config/tidb.rules.yml:/etc/prometheus/tidb.rules.yml:ro
       - ./data:/data
-    networks:
-      - tidb
+    restart: on-failure
   grafana:
     image: grafana/grafana:6.0.1
     user: "0"
@@ -220,7 +207,4 @@ services:
       - ./data/grafana:/var/lib/grafana
     ports:
       - "3000:3000"
-    networks:
-      - tidb
-networks:
-  tidb:
+    restart: on-failure
