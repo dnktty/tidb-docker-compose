@@ -24,7 +24,7 @@ $ mysql -h 127.0.0.1 -P 4000 -u root
 
 * Access [tidb-vision](https://github.com/pingcap/tidb-vision) at http://localhost:8010
 
-* Access Spark Web UI at http://localhost:9080
+* Access Spark Web UI at http://localhost:8080
   and access [TiSpark](https://github.com/pingcap/tispark) through spark://127.0.0.1:7077
 
 ## Docker Swarm
